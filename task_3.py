@@ -7,24 +7,25 @@ class BankAccount():
     self.__balance = 1000
 
   def deposit(self, amount):
-    with Lock():
-      self.__balance += amount
-      print(f'Deposited {amount}, new balance is {self.__balance}')
+    self.__balance += amount
+    print(f'Deposited {amount}, new balance is {self.__balance}')
 
   def withdraw(self, amount):
-    with Lock():
-      self.__balance -= amount
-      print(f'Withdrew {amount}, new balance is {self.__balance}')
+    self.__balance -= amount
+    print(f'Withdrew {amount}, new balance is {self.__balance}')
 
+operation_lock = Lock()
 
 def deposit_task(account, amount):
-  for _ in range(5):
-    account.deposit(amount)
+  with operation_lock:
+    for _ in range(5):
+      account.deposit(amount)
 
 
 def withdraw_task(account, amount):
-  for _ in range(5):
-    account.withdraw(amount)
+  with operation_lock:
+    for _ in range(5):
+      account.withdraw(amount)
 
 
 account = BankAccount()
