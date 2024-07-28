@@ -3,28 +3,28 @@ from multiprocessing import Manager, Process
 
 class WarehouseManager:
 
-  def __init__(self) -> None:
-    self.manager = Manager()
-    self._data = self.manager.dict()
+    def __init__(self) -> None:
+        self.manager = Manager()
+        self.data = self.manager.dict()
 
-  def process_request(self, request: list):
-    for item in request:
-      if item[1] == "receipt":
-        if item[0] in self._data:
-          self._data[item[0]] += item[2]
-        else:
-          self._data.update({item[0]: item[2]})
-      elif item[1] == "shipment":
-        if item[0] in self._data and self._data[item[0]] > 0:
-          self._data[item[0]] -= item[2]
-        elif self._data[item[0]] < 0:
-          self._data[item[0]] = 0
+    def process_request(self, request: list):
+        product, action, amount = request
+        if action == "receipt":
+            if product in self.data:
+                self.data[product] += amount
+            else:
+                self.data.update({product: amount})
+        elif action == "shipment":
+            if product in self.data and self.data[product] > 0:
+                self.data[product] -= amount
+            elif self.data[product] < 0:
+                self.data[product] = 0
 
-  def run(self, requests: list):
-    if __name__ == "__main__":
-      proc = Process(target=self.process_request, args=(requests, ))
-      proc.start()
-      proc.join()
+    def run(self, requests: list):
+        for req in requests:
+            proc = Process(target=self.process_request, args=(req,))
+            proc.start()
+            proc.join()
 
 
 # Создаем менеджера склада
@@ -39,4 +39,4 @@ requests = [("product1", "receipt", 100), ("product2", "receipt", 150),
 manager.run(requests)
 
 # Выводим обновленные данные о складских запасах
-print(dict(manager._data))
+print(dict(manager.data))
